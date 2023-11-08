@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shola</title>
+    <link rel="stylesheet" href="css/design.css">
+</head>
+<body onload="onInit(8)">
+    <button onclick="onInit(4, 4)">4 x 4</button>
+    <button onclick="onInit(8, 8)">8 x 8</button>
+    <button onclick="onInit(12, 12)">12 x 12</button>
+    
+    <table class="board-container">
+        <tbody class="board"></tbody>
+    </table>
+    <script>
+        document.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+            onCellMarked(this)
+        })
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

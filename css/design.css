@@ -1,0 +1,15 @@
+body {
+  background-color: rgb(90, 83, 83);
+  color: white;
+  text-align: center;
+}
+
+.board-container {
+  margin: auto;
+}
+
+.cell {
+  background-color: rgba(30, 244, 255, 0.2);
+  width: 5ex;
+  height: 5ex;
+}
