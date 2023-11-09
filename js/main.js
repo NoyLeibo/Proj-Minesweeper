@@ -124,7 +124,7 @@ function checkVictory(){
   if (gGame.markedCount === gLevel.MINES || gGame.shownCount === 0){
     gGame.isOn = false
     stopTimer()
-    document.querySelector('.timer').innerText = 'WINNER! 🤩 Time: ' + updateTimer()
+    document.querySelector('.timer').innerText = 'WINNER! 🤩 ' + updateTimer()
     for (var i = 0; i < gBoard.length; i++) {
       for (var j = 0; j < gBoard[i].length; j++) {
         gBoard[i][j].isShown = true

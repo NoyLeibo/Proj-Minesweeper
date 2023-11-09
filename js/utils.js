@@ -21,7 +21,7 @@ function getRandomItem(arr) {
 function updateTimer() {
 	const currentTime = new Date().getTime()
 	const elapsedTime = (currentTime - gStartTime) / 1000
-	return document.querySelector('.timer').innerText = "Timer: " + elapsedTime.toFixed(3)
+	return document.querySelector('.timer').innerText = "Time: " + elapsedTime.toFixed(3)
 }
 
 function startTimer() {
