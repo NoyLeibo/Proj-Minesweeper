@@ -19,9 +19,13 @@ const gGame = {
 var gInterval
 var gBoard
 var gStartTime
-console.log(gStartTime)
 
 function onInit(size) {
+  stopTimer()
+  gGame.markedCount = 0
+  gGame.secsPassed = updateTimer()
+  gStartTime = undefined
+  document.querySelector('.timer').innerText = 'Timer off, start for start 😊'
   gGame.lives = 3
   gLevel.SIZE = size;
   gGame.isOn = true;
@@ -49,7 +53,6 @@ function buildBoard(Idx) {
       };
     }
   }
-  console.log(gLevel.SIZE)
   switch(gLevel.SIZE) {
     case 4:
       gLevel.MINES = 2
@@ -61,7 +64,11 @@ function buildBoard(Idx) {
       gLevel.MINES = 32
       break
   }
-  var RANDOM_NUM = getRandomInt(0, gLevel.SIZE)
+
+  gGame.shownCount = Idx * Idx - gLevel.SIZE
+  // gGame.markedCount 
+
+  // push mines to the board
   var item = getRandomItem(board[1])
   const sizeLength = []
   for (var x = 0; x < gLevel.SIZE; x++) sizeLength.push(x)
@@ -69,6 +76,7 @@ function buildBoard(Idx) {
 
   return board
 }
+
 
 function renderBoard(board) {
   if (!gGame.isOn) return
@@ -90,37 +98,65 @@ function renderBoard(board) {
     }
     strHTML += "</tr>\n";
   }
-
+  
   const elTable = document.querySelector(".board");
   elTable.innerHTML = strHTML;
 }
-function onCellMarked(cell, i, j) {
+
+function onCellMarked(cell, i, j) { // Right click - turns flag
   if (gStartTime === undefined) startTimer()
   if (gBoard[i][j].isMarked == true || 
-    (gBoard[i][j].isMarked == false && gBoard[i][j].isShown == false))
-  {
-    gBoard[i][j].isShown = !gBoard[i][j].isMarked;
-    gBoard[i][j].isMarked = !gBoard[i][j].isMarked;
-    renderBoard(gBoard);
+    (gBoard[i][j].isMarked == false && gBoard[i][j].isShown == false)){
+      gBoard[i][j].isShown = !gBoard[i][j].isMarked
+      gBoard[i][j].isMarked = !gBoard[i][j].isMarked
+      renderBoard(gBoard)
   }
-  cell.preventDefault();
+  if (gBoard[i][j].isMine && gBoard[i][j].isMarked) {
+      gGame.markedCount ++
+      checkVictory()
+      console.log(MINE) // need to continue from here
+  }
+  cell.preventDefault()
+  return
 }
 
-function onCellClicked(elEvent, a, b) {
-  if (gStartTime === undefined) startTimer()
-  if (gBoard[a][b].isMine) gGame.lives--
-  if (gBoard[a][b].isMine && gGame.lives === 0) return minesIsShown();
+function checkVictory(){
+  console.log('gGame.markedCount: ', gGame.markedCount)
+  console.log('gLevel.MINES: ', gLevel.MINES)
+  if (gGame.markedCount === gLevel.MINES){
+    gGame.isOn = false
+    stopTimer()
+    document.querySelector('.timer').innerText = 'WINNER! 🤩 Time: ' + updateTimer()
+    for (var i = 0; i < gBoard.length; i++) {
+      for (var j = 0; j < gBoard[i].length; j++) {
+        gBoard[i][j].isShown = true
+      }
+    }
+  }
+  renderBoard(gBoard)
+  return
+}
+
+function onCellClicked(elEvent, a, b) { // Left click
+  if (gStartTime === undefined && gGame.lives === 3) startTimer()
+  if (gBoard[a][b].isMarked) return
+  if (gBoard[a][b].isMine && !gBoard[a][b].isShown){
+    gGame.lives--
+    renderBoard(gBoard)
+    }
+  if (gBoard[a][b].isMine && gGame.lives <= 0) return minesIsShown();
   if (gBoard[a][b].isShown) return;
 
-  gBoard[a][b].isShown = true;
-
-  if (gBoard[a][b].minesAroundCount === 0) {
-    expandShown(a, b);
+  if (gBoard[a][b].isShown) {
+    console.log('CONITINUE') // need to continue from here
   }
-  renderBoard(gBoard);
-}
 
-function loseGame() {}
+  gBoard[a][b].isShown = true;
+  if (gBoard[a][b].minesAroundCount === 0) {
+    expandShown(a, b)
+  }
+  renderBoard(gBoard)
+}
 
 function expandShown(row, col) {
   for (var i = row - 1; i <= row + 1; i++) {
@@ -157,7 +193,7 @@ function setMinesNegsCount(board) {
   renderBoard(board);
 }
 
-function minesIsShown() {
+function minesIsShown() { // happen when lives is 0 finish the game.
   for (var i = 0; i < gBoard.length; i++) {
     for (var j = 0; j < gBoard[i].length; j++) {
       if (gBoard[i][j].isMine) {
@@ -165,7 +201,11 @@ function minesIsShown() {
       }
     }
   }
-  renderBoard(gBoard);
+  if (gGame.isOn){
+    stopTimer()
+    document.querySelector('.timer').innerText = 'You lose 😥. ' + updateTimer()
+  }
+  renderBoard(gBoard)
   gGame.isOn = false
   return;
 }
