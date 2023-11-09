@@ -27,6 +27,7 @@ function onInit(size) {
   gStartTime = undefined
   document.querySelector('.timer').innerText = 'Timer off, start for start 😊'
   gGame.lives = 3
+  if (size === 4) gGame.lives = 2
   gLevel.SIZE = size;
   gGame.isOn = true;
   gBoard = buildBoard(gLevel.SIZE);
@@ -65,7 +66,7 @@ function buildBoard(Idx) {
       break
   }
 
-  gGame.shownCount = Idx * Idx - gLevel.SIZE
+  gGame.shownCount = gLevel.SIZE * gLevel.SIZE - gLevel.MINES 
   // gGame.markedCount 
 
   // push mines to the board
@@ -98,7 +99,6 @@ function renderBoard(board) {
     }
     strHTML += "</tr>\n";
   }
-  
   const elTable = document.querySelector(".board");
   elTable.innerHTML = strHTML;
 }
@@ -116,14 +116,12 @@ function onCellMarked(cell, i, j) { // Right click - turns flag
       checkVictory()
       console.log(MINE) // need to continue from here
   }
-  cell.preventDefault()
+  cell.preventDefault() // Cancel the other place mark
   return
 }
 
 function checkVictory(){
-  console.log('gGame.markedCount: ', gGame.markedCount)
-  console.log('gLevel.MINES: ', gLevel.MINES)
-  if (gGame.markedCount === gLevel.MINES){
+  if (gGame.markedCount === gLevel.MINES || gGame.shownCount === 0){
     gGame.isOn = false
     stopTimer()
     document.querySelector('.timer').innerText = 'WINNER! 🤩 Time: ' + updateTimer()
@@ -138,33 +136,37 @@ function checkVictory(){
 }
 
 function onCellClicked(elEvent, a, b) { // Left click
-  if (gStartTime === undefined && gGame.lives === 3) startTimer()
+  if (gStartTime === undefined && gGame.lives === 3 | 2) startTimer()
   if (gBoard[a][b].isMarked) return
-  if (gBoard[a][b].isMine && !gBoard[a][b].isShown){
+  if (gBoard[a][b].isMine && !gBoard[a][b].isShown){ // got bombed
     gGame.lives--
     renderBoard(gBoard)
+    if (gGame.lives <= 0) return minesIsShown(); // bombed with no lives)
     }
-  if (gBoard[a][b].isMine && gGame.lives <= 0) return minesIsShown();
   if (gBoard[a][b].isShown) return;
 
   if (gBoard[a][b].isShown) {
-    console.log('CONITINUE') // need to continue from here
+    console.log('CONITINUE') // need to continue from here - or maybe not? check later.
   }
-
+  if (!gBoard[a][b].isMine) gGame.shownCount--
   gBoard[a][b].isShown = true;
   if (gBoard[a][b].minesAroundCount === 0) {
     expandShown(a, b)
   }
   renderBoard(gBoard)
+  checkVictory()
 }
 
 function expandShown(row, col) {
   for (var i = row - 1; i <= row + 1; i++) {
     for (var j = col - 1; j <= col + 1; j++) {
-      if (i < 0 || i >= gBoard.length || j < 0 || j >= gBoard[0].length)
+      if (i < 0 || i >= gBoard.length || j < 0 || j >= gBoard[0].length){
         continue;
+      }
       if (!gBoard[i][j].isMine && !gBoard[i][j].isShown) {
-        gBoard[i][j].isShown = true;
+        gBoard[i][j].isShown = true
+        gGame.shownCount--
+        console.log('gGame.shownCount: ', gGame.shownCount)
         renderBoard(gBoard);
         if (gBoard[i][j].minesAroundCount === 0) {
           expandShown(i, j);
