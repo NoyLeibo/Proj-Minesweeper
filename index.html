@@ -8,6 +8,9 @@
 </head>
 <body onload="onInit(8)">
     <h1>Minesweeper</h1>
+    <div class="hint"><button onclick="getHint()"></button></div>
+    <span class="dark"><button onclick="changingTheme('Dark')">Dark-mode</button></span>
+    <span class="bright"><button onclick="changingTheme('Bright')">Bright-mode</button></span>
     <div class="timer">Timer off, start for start 😊</div>
     <button onclick="onInit(4)">Begginer</button>
     <button onclick="onInit(8)">Medium</button>

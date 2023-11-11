@@ -6,6 +6,7 @@ const neighbor1 = "1";
 const neighbor2 = "2";
 const neighbor3 = "3";
 const MARK = "🚩";
+const HINT = '💡'
 
 const gLevel = { SIZE: 0, MINES: 2 };
 const gGame = {
@@ -13,7 +14,8 @@ const gGame = {
   shownCount: 0,
   markedCount: 0,
   secsPassed: 0,
-  lives: 0
+  lives: 0,
+  hints: 0
 };
 
 var gInterval
@@ -21,6 +23,8 @@ var gBoard
 var gStartTime
 
 function onInit(size) {
+  gGame.hints = 3
+  document.querySelector('.hint').innerHTML = `<span class="hint"><button onclick="getHint()">Get one hint ${HINT.repeat(gGame.hints)}</button></span>`
   stopTimer()
   gGame.markedCount = 0
   gGame.secsPassed = updateTimer()
@@ -33,6 +37,7 @@ function onInit(size) {
   gBoard = buildBoard(gLevel.SIZE);
   renderBoard(gBoard);
   setMinesNegsCount(gBoard);
+  
   // console.table(gBoard[0]) // שורה אפס
   // console.table(gBoard[1]) // שורה ראשונה
   // console.table(gBoard[2]) // שורה שניה
@@ -67,17 +72,32 @@ function buildBoard(Idx) {
   }
 
   gGame.shownCount = gLevel.SIZE * gLevel.SIZE - gLevel.MINES 
-  // gGame.markedCount 
 
   // push mines to the board
-  var item = getRandomItem(board[1])
   const sizeLength = []
   for (var x = 0; x < gLevel.SIZE; x++) sizeLength.push(x)
   for (var i = 0; i < gLevel.MINES; i++) board[getRandomItem(sizeLength)][getRandomItem(sizeLength)].isMine = true
-
   return board
 }
 
+function getHint(){
+  if (gGame.hints === 0 || !gGame.isOn) return
+  const sizeLength = []
+  for (var x = 0; x < gLevel.SIZE; x++) sizeLength.push(x)
+  var randomHint = gBoard[getRandomItem(sizeLength)][getRandomItem(sizeLength)]
+  while(randomHint.isShown) randomHint = gBoard[getRandomItem(sizeLength)][getRandomItem(sizeLength)]
+  randomHint.isShown = true
+  renderBoard(gBoard)
+  setTimeout(() => {
+    randomHint.isShown = false;
+    renderBoard(gBoard);
+  }, 3000);
+  gGame.hints--
+  document.querySelector('.hint').innerHTML = `<span class="hint"><button onclick="getHint()">Get one hint ${HINT.repeat(gGame.hints)}</button></span>`
+  if (gGame.hints === 0){
+    document.querySelector('.hint').innerHTML = `<span class="hint"><button onclick="getHint()">No more hints</button></span>`
+  }
+}
 
 function renderBoard(board) {
   if (!gGame.isOn) return
@@ -90,6 +110,7 @@ function renderBoard(board) {
         cell = ""
       }
       if (cell.isShown) {
+
         if (cell.isMarked) cell = MARK;
         else if (!cell.isMine) cell = cell.minesAroundCount;
         else if (cell.isMine) cell = MINE;
@@ -144,10 +165,6 @@ function onCellClicked(elEvent, a, b) { // Left click
     if (gGame.lives <= 0) return minesIsShown(); // bombed with no lives)
     }
   if (gBoard[a][b].isShown) return;
-
-  if (gBoard[a][b].isShown) {
-    console.log('CONITINUE') // need to continue from here - or maybe not? check later.
-  }
   if (!gBoard[a][b].isMine) gGame.shownCount--
   gBoard[a][b].isShown = true;
   if (gBoard[a][b].minesAroundCount === 0) {
@@ -166,7 +183,6 @@ function expandShown(row, col) {
       if (!gBoard[i][j].isMine && !gBoard[i][j].isShown) {
         gBoard[i][j].isShown = true
         gGame.shownCount--
-        console.log('gGame.shownCount: ', gGame.shownCount)
         renderBoard(gBoard);
         if (gBoard[i][j].minesAroundCount === 0) {
           expandShown(i, j);
@@ -210,4 +226,15 @@ function minesIsShown() { // happen when lives is 0 finish the game.
   renderBoard(gBoard)
   gGame.isOn = false
   return;
+}
+
+function changingTheme(themeMode){
+  if (themeMode === 'Dark'){
+    document.body.style.backgroundColor = 'darkslategray'
+    document.body.style.color = 'rgb(0, 0, 0)'
+  }
+  else if (themeMode === 'Bright'){
+    document.body.style.backgroundColor = 'rgb(172, 237, 237)'
+    document.body.style.color = 'rgb(235, 101, 101)'
+  }
 }
